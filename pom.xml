@@ -29,7 +29,7 @@
 
   <groupId>org.apache.maven.resolver</groupId>
   <artifactId>maven-resolver</artifactId>
-  <version>2.0.25-SNAPSHOT</version>
+  <version>2.0.25.2</version>
   <packaging>pom</packaging>
 
   <name>Maven Artifact Resolver</name>
@@ -72,6 +72,27 @@
     <module>maven-resolver-tools</module>
   </modules>
 
+  <distributionManagement>
+    <!-- Publish the versioned releases here -->
+    <!--repository>
+      <id>releases</id>
+      <name>Releases</name>
+      <url>dav:http://uaap03:8082/repository/releases</url>
+    </repository-->
+    <!-- Publish the versioned releases here -->
+    <!--snapshotRepository>
+      <id>snapshots</id>
+      <name>Snapshots</name>
+      <url>dav:http://uaap03:8082/repository/snapshots</url>
+    </snapshotRepository-->
+    <repository>
+      <id>releases</id>
+      <name>Releases</name>
+      <url>dav:http://uaap03:8082/repository/thirdparty/</url>
+    </repository>
+  </distributionManagement>
+
+  <!--
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-resolver.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-resolver.git</developerConnection>
@@ -92,6 +113,7 @@
       <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
     </site>
   </distributionManagement>
+  -->
 
   <properties>
     <checkstyle.includeTestSourceDirectory>false</checkstyle.includeTestSourceDirectory>
@@ -350,6 +372,38 @@
     </dependencies>
   </dependencyManagement>
 
+  <!-- download artifacts from this repo -->
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>public</id>
+      <name>Public Repositories</name>
+      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
+      <url>http://uaap03:8082/repository/public</url>
+    </repository>
+  </repositories>
+
+  <!-- download plugins from this repo -->
+  <pluginRepositories>
+    <pluginRepository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>public</id>
+      <name>Public Repositories</name>
+      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
+      <url>http://uaap03:8082/repository/public</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -357,6 +411,7 @@
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>
+            <skip>true</skip>
             <inputExcludes combine.children="append">
               <exclude>src/main/resources/**/*.key</exclude>
               <exclude>src/test/resources/**/*.ini</exclude>
@@ -736,6 +791,18 @@
         <artifactId>sisu-maven-plugin</artifactId>
       </plugin>
     </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+      <extension>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-transport-wagon</artifactId>
+        <version>2.0.25.1</version>
+      </extension>
+    </extensions>
   </build>
 
   <profiles>
