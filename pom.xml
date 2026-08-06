@@ -29,7 +29,7 @@
 
   <groupId>org.apache.maven.resolver</groupId>
   <artifactId>maven-resolver</artifactId>
-  <version>1.9.28-SNAPSHOT</version>
+  <version>1.9.28.1</version>
   <packaging>pom</packaging>
 
   <name>Maven Artifact Resolver</name>
@@ -62,6 +62,7 @@
     <module>maven-resolver-demos</module>
   </modules>
 
+<!--
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-resolver.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-resolver.git</developerConnection>
@@ -82,6 +83,7 @@
       <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
     </site>
   </distributionManagement>
+-->
 
   <properties>
     <javaVersion>8</javaVersion>
@@ -241,6 +243,14 @@
   </dependencyManagement>
 
   <build>
+	<extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+	
     <pluginManagement>
       <plugins>
         <plugin>
@@ -567,6 +577,55 @@
       </plugin>
     </plugins>
   </build>
+  
+   <!-- download artifacts from this repo -->
+  <repositories>
+    <repository>
+      <id>public</id>
+      <name>Public Repositories</name>
+      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
+      <url>http://uaap03:8082/repository/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  
+  <!-- download plugins from this repo -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>public</id>
+      <name>Public Repositories</name>
+      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
+      <url>http://uaap03:8082/repository/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+  
+  <distributionManagement>
+    <!-- Publish the versioned releases here -->
+    <repository>
+      <id>releases</id>
+      <name>Releases</name>
+      <!--url>dav:http://uaap03:8081/nexus/content/repositories/releases</url-->
+      <url>dav:http://uaap03:8082/repository/releases</url>
+    </repository>
+    <!-- Publish the versioned releases here -->
+    <snapshotRepository>
+      <id>snapshots</id>
+      <name>Snapshots</name>
+      <!--url>dav:http://uaap03:8081/nexus/content/repositories/snapshots</url-->
+      <url>dav:http://uaap03:8082/repository/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <profiles>
     <profile>

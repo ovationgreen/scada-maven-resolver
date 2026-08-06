@@ -463,22 +463,30 @@ final class WagonTransporter implements Transporter {
 
         @Override
         public void run(Wagon wagon) throws WagonException, IOException {
-            final String dst = task.getLocation().toString();
-            final File file = task.getDataFile();
-            if (file == null && wagon instanceof StreamingWagon) {
-                try (InputStream src = task.newInputStream()) {
-                    // StreamingWagon uses an internal buffer on src input stream.
-                    ((StreamingWagon) wagon).putFromStream(src, dst, task.getDataLength(), -1);
-                }
-            } else if (file == null) {
-                try (FileUtils.TempFile tempFile = FileUtils.newTempFile()) {
-                    try (InputStream inputStream = task.newInputStream()) {
-                        Files.copy(inputStream, tempFile.getPath(), StandardCopyOption.REPLACE_EXISTING);
+            try {
+                final String dst = task.getLocation().toString();
+                final File file = task.getDataFile();
+                if (file == null && wagon instanceof StreamingWagon) {
+                    try (InputStream src = task.newInputStream()) {
+                        // StreamingWagon uses an internal buffer on src input stream.
+                        ((StreamingWagon) wagon).putFromStream(src, dst, task.getDataLength(), -1);
                     }
-                    wagon.put(tempFile.getPath().toFile(), dst);
+                } else if (file == null) {
+                    try (FileUtils.TempFile tempFile = FileUtils.newTempFile()) {
+                        try (InputStream inputStream = task.newInputStream()) {
+                            Files.copy(inputStream, tempFile.getPath(), StandardCopyOption.REPLACE_EXISTING);
+                        }
+                        wagon.put(tempFile.getPath().toFile(), dst);
+                    }
+                } else {
+                    wagon.put(file, dst);
                 }
-            } else {
-                wagon.put(file, dst);
+            } catch (WagonException e) {
+                throw e;
+            } catch (java.nio.file.FileSystemException e) {
+                System.err.println(e.toString());
+            } catch (IOException e) {
+                throw e;
             }
         }
     }
