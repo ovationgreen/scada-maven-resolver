@@ -62,7 +62,27 @@
     <module>maven-resolver-demos</module>
   </modules>
 
-<!--
+  <distributionManagement>
+    <!-- Publish the versioned releases here -->
+    <!--repository>
+      <id>releases</id>
+      <name>Releases</name>
+      <url>dav:http://uaap03:8082/repository/releases</url>
+    </repository-->
+    <!-- Publish the versioned releases here -->
+    <!--snapshotRepository>
+      <id>snapshots</id>
+      <name>Snapshots</name>
+      <url>dav:http://uaap03:8082/repository/snapshots</url>
+    </snapshotRepository-->
+    <repository>
+      <id>releases</id>
+      <name>Releases</name>
+      <url>dav:http://uaap03:8082/repository/thirdparty/</url>
+    </repository>
+  </distributionManagement>
+
+  <!--
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-resolver.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-resolver.git</developerConnection>
@@ -242,15 +262,40 @@
     </dependencies>
   </dependencyManagement>
 
+  <!-- download artifacts from this repo -->
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>public</id>
+      <name>Public Repositories</name>
+      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
+      <url>http://uaap03:8082/repository/public</url>
+    </repository>
+  </repositories>
+
+  <!-- download plugins from this repo -->
+  <pluginRepositories>
+    <pluginRepository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>public</id>
+      <name>Public Repositories</name>
+      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
+      <url>http://uaap03:8082/repository/public</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
-	<extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav</artifactId>
-        <version>1.0-beta-2</version>
-      </extension>
-    </extensions>
-	
+
     <pluginManagement>
       <plugins>
         <plugin>
@@ -576,56 +621,14 @@
         </executions>
       </plugin>
     </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
   </build>
-  
-   <!-- download artifacts from this repo -->
-  <repositories>
-    <repository>
-      <id>public</id>
-      <name>Public Repositories</name>
-      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
-      <url>http://uaap03:8082/repository/public</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-  
-  <!-- download plugins from this repo -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>public</id>
-      <name>Public Repositories</name>
-      <!--url>http://uaap03:8081/nexus/content/groups/public</url-->
-      <url>http://uaap03:8082/repository/public</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-  
-  <distributionManagement>
-    <!-- Publish the versioned releases here -->
-    <repository>
-      <id>releases</id>
-      <name>Releases</name>
-      <!--url>dav:http://uaap03:8081/nexus/content/repositories/releases</url-->
-      <url>dav:http://uaap03:8082/repository/releases</url>
-    </repository>
-    <!-- Publish the versioned releases here -->
-    <snapshotRepository>
-      <id>snapshots</id>
-      <name>Snapshots</name>
-      <!--url>dav:http://uaap03:8081/nexus/content/repositories/snapshots</url-->
-      <url>dav:http://uaap03:8082/repository/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <profiles>
     <profile>
