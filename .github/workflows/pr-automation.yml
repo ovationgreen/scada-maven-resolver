@@ -17,11 +17,11 @@
 
 name: PR Automation
 on:
-  pull_request_target:
-    types:
-      - closed
+  push:
+    branches:
+      - maven-resolver-1.9.x
 
 jobs:
   pr-automation:
     name: PR Automation
-    uses: apache/maven-gh-actions-shared/.github/workflows/pr-automation.yml@v4
+    uses: apache/maven-gh-actions-shared/.github/workflows/pr-automation.yml@v5

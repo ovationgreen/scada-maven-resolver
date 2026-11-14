@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>49</version>
+    <version>50</version>
     <relativePath />
   </parent>
 
@@ -111,7 +111,7 @@
     <failsafe.redirectTestOutputToFile>${surefire.redirectTestOutputToFile}</failsafe.redirectTestOutputToFile>
     <maven.site.path>resolver-archives/resolver-LATEST-1.x</maven.site.path>
     <checkstyle.violation.ignore>None</checkstyle.violation.ignore>
-    <sisuVersion>1.1.0</sisuVersion>
+    <sisuVersion>1.1.2</sisuVersion>
     <!-- the same version as in Maven 3.9.x -->
     <guiceVersion>5.1.0</guiceVersion>
     <slf4jVersion>1.7.36</slf4jVersion>
@@ -216,7 +216,7 @@
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
         <!-- the same version as in Maven 3.9,x -->
-        <version>3.6.0</version>
+        <version>3.6.2</version>
       </dependency>
 
       <dependency>
@@ -245,7 +245,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.6.0-jre</version>
+        <version>33.8.0-jre</version>
       </dependency>
 
       <dependency>
@@ -299,9 +299,23 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <inputExcludes combine.children="append">
+
+              <exclude>src/test/resources/**/*.ini</exclude>
+              <exclude>src/test/resources/**/*.txt</exclude>
+              <exclude>src/test/resources/ssl/*-store</exclude>
+              <exclude>.gitattributes</exclude>
+
+            </inputExcludes>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>com.github.siom79.japicmp</groupId>
           <artifactId>japicmp-maven-plugin</artifactId>
-          <version>0.26.1</version>
+          <version>0.27.0</version>
           <configuration>
             <oldVersion>
               <!-- We compare same module against 1.8.0 set as "baseline" -->
@@ -501,18 +515,7 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-          <groupId>org.apache.rat</groupId>
-          <artifactId>apache-rat-plugin</artifactId>
-          <configuration>
-            <excludes combine.children="append">
-              <exclude>src/test/resources/**/*.ini</exclude>
-              <exclude>src/test/resources/**/*.txt</exclude>
-              <exclude>src/test/resources/ssl/*-store</exclude>
-              <exclude>.gitattributes</exclude>
-            </excludes>
-          </configuration>
-        </plugin>
+
         <plugin>
           <groupId>biz.aQute.bnd</groupId>
           <artifactId>bnd-maven-plugin</artifactId>
@@ -555,6 +558,16 @@
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerArgs>
+            <!-- Java 8 stays the target of this line; javac 21+ warns about it on every module -->
+            <compilerArg>-Xlint:-options</compilerArg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -602,7 +615,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.27</version>
+        <version>1.29.1</version>
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
@@ -631,6 +644,7 @@
   </build>
 
   <profiles>
+
     <profile>
       <id>reporting</id>
       <reporting>

@@ -26,11 +26,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositoryEvent;
 import org.eclipse.aether.RepositoryEvent.EventType;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.SyncContext;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.ArtifactProperties;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -998,5 +1000,87 @@ public class DefaultArtifactResolverTest {
             // message should contain present=true, available=false, filter message
             assertTrue(ex.getMessage().contains("gid:aid:ext:ver (present, but unavailable): REFUSED"));
         }
+    }
+
+    private static SyncContext countingSyncContext(AtomicInteger closeCount) {
+        return new SyncContext() {
+            @Override
+            public void acquire(
+                    Collection<? extends Artifact> artifacts,
+                    Collection<? extends org.eclipse.aether.metadata.Metadata> metadatas) {}
+
+            @Override
+            public void close() {
+                closeCount.incrementAndGet();
+            }
+        };
+    }
+
+    @Test
+    public void testSyncContextIsClosedExactlyOnce() throws Exception {
+        final AtomicInteger sharedCloses = new AtomicInteger(0);
+        final AtomicInteger exclusiveCloses = new AtomicInteger(0);
+        final SyncContext sharedContext = countingSyncContext(sharedCloses);
+        final SyncContext exclusiveContext = countingSyncContext(exclusiveCloses);
+
+        resolver = new DefaultArtifactResolver();
+        resolver.setFileProcessor(new TestFileProcessor());
+        resolver.setRepositoryEventDispatcher(new StubRepositoryEventDispatcher());
+        resolver.setVersionResolver(new StubVersionResolver());
+        resolver.setUpdateCheckManager(new StaticUpdateCheckManager(false));
+        resolver.setRepositoryConnectorProvider(repositoryConnectorProvider);
+        resolver.setRemoteRepositoryManager(new StubRemoteRepositoryManager());
+        resolver.setSyncContextFactory((s, shared) -> shared ? sharedContext : exclusiveContext);
+        resolver.setOfflineController(new DefaultOfflineController());
+        resolver.setArtifactResolverPostProcessors(Collections.emptyMap());
+        resolver.setRemoteRepositoryFilterManager(remoteRepositoryFilterManager);
+
+        ArtifactRequest request = new ArtifactRequest(artifact, null, "");
+
+        try {
+            resolver.resolveArtifact(session, request);
+            fail("Should throw ArtifactResolutionException");
+        } catch (ArtifactResolutionException ex) {
+            // expected
+        }
+
+        // distinct instances for the shared and the exclusive context: each must be closed exactly once
+        assertEquals("Shared SyncContext should be closed exactly once", 1, sharedCloses.get());
+        assertEquals("Exclusive SyncContext should be closed exactly once", 1, exclusiveCloses.get());
+    }
+
+    @Test
+    public void testSharedSyncContextIsClosedWhenExclusiveCannotBeCreated() throws Exception {
+        final AtomicInteger sharedCloses = new AtomicInteger(0);
+        final SyncContext sharedContext = countingSyncContext(sharedCloses);
+
+        resolver = new DefaultArtifactResolver();
+        resolver.setFileProcessor(new TestFileProcessor());
+        resolver.setRepositoryEventDispatcher(new StubRepositoryEventDispatcher());
+        resolver.setVersionResolver(new StubVersionResolver());
+        resolver.setUpdateCheckManager(new StaticUpdateCheckManager(false));
+        resolver.setRepositoryConnectorProvider(repositoryConnectorProvider);
+        resolver.setRemoteRepositoryManager(new StubRemoteRepositoryManager());
+        resolver.setSyncContextFactory((s, shared) -> {
+            if (shared) {
+                return sharedContext;
+            }
+            throw new IllegalStateException("no exclusive context");
+        });
+        resolver.setOfflineController(new DefaultOfflineController());
+        resolver.setArtifactResolverPostProcessors(Collections.emptyMap());
+        resolver.setRemoteRepositoryFilterManager(remoteRepositoryFilterManager);
+
+        ArtifactRequest request = new ArtifactRequest(artifact, null, "");
+
+        try {
+            resolver.resolveArtifact(session, request);
+            fail("Should throw IllegalStateException");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+
+        assertEquals(
+                "Shared SyncContext should be closed when the exclusive one cannot be created", 1, sharedCloses.get());
     }
 }
